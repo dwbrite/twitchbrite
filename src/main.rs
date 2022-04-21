@@ -1,9 +1,10 @@
 mod config;
 mod screens;
 
-use crate::screens::widgets;
-use crate::screens::widgets::unicornvomit;
-use anyhow::Result;
+use crate::screens::widgets::unicorn_vomit;
+use crate::screens::{widgets, Screen};
+
+use crate::screens::bridge_connect::BridgeConnect;
 use crossterm::event;
 use crossterm::event::{Event, KeyCode};
 use crossterm::terminal::enable_raw_mode;
@@ -15,11 +16,19 @@ use tui::style::{Color, Style};
 use tui::widgets::Borders;
 use tui::Terminal;
 
-pub struct TwitchBrite<B: Backend> {
-    should_stop: bool,
+// TODO: maybe add blocking for the (what should be) asynchronous parts like hue comms
+
+pub struct GlobalState {
     ticks: u64,
+    should_stop: bool,
+    edge_animated: bool,
+}
+
+pub struct TwitchBrite<B: Backend> {
     terminal: Terminal<B>,
-    // TODO: add list of screens and current screen, requires a Trait with update() and draw()
+    screen: Box<dyn Screen<B>>,
+    state: GlobalState,
+    history_stack: Vec<Box<dyn Screen<B>>>,
 }
 
 impl<B: Backend> TwitchBrite<B> {
@@ -30,16 +39,21 @@ impl<B: Backend> TwitchBrite<B> {
         terminal.clear()?;
 
         let mut app = Self {
-            should_stop: false,
-            ticks: 0,
             terminal,
+            screen: Box::new(BridgeConnect::init()),
+            state: GlobalState {
+                should_stop: false,
+                ticks: 0,
+                edge_animated: true,
+            },
+            history_stack: vec![],
         };
 
         loop {
             app.update()?;
             app.draw()?;
 
-            if app.should_stop {
+            if app.state.should_stop {
                 break;
             }
 
@@ -50,7 +64,7 @@ impl<B: Backend> TwitchBrite<B> {
     }
 
     fn update(&mut self) -> anyhow::Result<()> {
-        self.ticks += 1;
+        self.state.ticks += 1;
 
         // new screens can use event::poll() and event::read() for input
 
@@ -59,7 +73,7 @@ impl<B: Backend> TwitchBrite<B> {
                 Event::Key(e) => {
                     // (temporary) kill program on esc
                     if e.code == KeyCode::Esc {
-                        self.should_stop = true;
+                        self.state.should_stop = true;
                     }
                 }
                 Event::Mouse(_) => {} // we can use this for selecting things with the mouse, if warranted
@@ -72,19 +86,7 @@ impl<B: Backend> TwitchBrite<B> {
 
     fn draw(&mut self) -> anyhow::Result<()> {
         self.terminal.draw(|f| {
-            let size = f.size();
-            let block = tui::widgets::Block::default().style(Style::default().bg(Color::Black));
-            let menu = tui::widgets::Block::default()
-                .borders(Borders::ALL)
-                .title(" welcome to twitchbrite ")
-                .style(Style::default().bg(Color::Black));
-
-            let bg = unicornvomit::Background {
-                state: self.ticks as f32 * 0.016,
-            };
-            f.render_widget(bg, size);
-            f.render_widget(block, Rect::new(2, 1, size.width - 4, size.height - 2));
-            f.render_widget(menu, widgets::center_rect(size, 60, 16));
+            self.screen.draw(&mut self.state, f);
         })?;
 
         Ok(())

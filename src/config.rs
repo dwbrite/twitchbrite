@@ -19,7 +19,7 @@ pub struct Config {
     pub(crate) username: String,
 }
 
-fn get_config_path() -> Result<PathBuf> {
+pub fn get_config_path() -> Result<PathBuf> {
     let exe = env::current_exe()?;
     let dir = exe.parent().ok_or(anyhow!("reeeeeee"))?;
     let mut dir = dir.to_path_buf();
@@ -28,7 +28,7 @@ fn get_config_path() -> Result<PathBuf> {
     Ok(dir)
 }
 
-fn generate_device_type() -> String {
+pub fn generate_device_type() -> String {
     let mut rng = thread_rng();
     let chars: String = (0..5).map(|_| rng.sample(Alphanumeric) as char).collect();
     format!("twitchbrite#{}", chars)
