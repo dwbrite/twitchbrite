@@ -1,4 +1,4 @@
-pub mod bg;
+pub mod unicornvomit;
 
 use tui::layout::Rect;
 

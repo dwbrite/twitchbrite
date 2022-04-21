@@ -8,6 +8,11 @@ use std::path::PathBuf;
 use std::time::Duration;
 use std::{env, fs, thread};
 
+pub struct LightInterface {
+    bridge: Bridge,
+    config: Config,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub(crate) device_type: String, // honestly this is entirely unnecessary
