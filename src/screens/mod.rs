@@ -1,10 +1,10 @@
 pub mod bridge_connect;
 pub mod widgets;
 
-use crate::{unicorn_vomit, GlobalState};
+use crate::{GlobalState};
 use tui::backend::Backend;
-use tui::layout::Rect;
-use tui::style::{Color, Style};
+
+
 use tui::Frame;
 
 pub trait Screen<B: Backend> {

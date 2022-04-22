@@ -5,15 +5,12 @@ use crate::screens::widgets::unicorn_vomit;
 use crate::screens::{widgets, Screen};
 
 use crate::screens::bridge_connect::BridgeConnect;
-use crossterm::event;
-use crossterm::event::{Event, KeyCode};
+
 use crossterm::terminal::enable_raw_mode;
 use std::time::Duration;
 use std::{io, thread};
 use tui::backend::{Backend, CrosstermBackend};
-use tui::layout::Rect;
-use tui::style::{Color, Style};
-use tui::widgets::Borders;
+
 use tui::Terminal;
 
 // TODO: maybe add blocking for the (what should be) asynchronous parts like hue comms
@@ -67,19 +64,7 @@ impl<B: Backend> TwitchBrite<B> {
         self.state.ticks += 1;
 
         // new screens can use event::poll() and event::read() for input
-
-        while event::poll(Duration::from_millis(0))? {
-            match event::read().unwrap() {
-                Event::Key(e) => {
-                    // (temporary) kill program on esc
-                    if e.code == KeyCode::Esc {
-                        self.state.should_stop = true;
-                    }
-                }
-                Event::Mouse(_) => {} // we can use this for selecting things with the mouse, if warranted
-                _ => {}               // ignore anything else
-            }
-        }
+        self.screen.update(&mut self.state);
 
         Ok(())
     }

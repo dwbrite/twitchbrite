@@ -5,7 +5,7 @@ use crate::GlobalState;
 use tui::backend::Backend;
 use tui::layout::Rect;
 use tui::style::{Color, Style};
-use tui::widgets::Widget;
+
 use tui::Frame;
 
 /// haha, you fool, this is actually purple!
