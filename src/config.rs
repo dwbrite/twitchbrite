@@ -6,12 +6,13 @@ use serde::{Deserialize, Serialize};
 
 use std::path::PathBuf;
 
-use std::{env};
+use std::env;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
-    pub(crate) device_type: String, // honestly this is entirely unnecessary
-    pub(crate) username: String,
+    pub device_type: String, // honestly this is entirely unnecessary
+    pub bridge_ip: std::net::IpAddr,
+    pub bridge_username: String,
 }
 
 pub fn get_config_path() -> Result<PathBuf> {

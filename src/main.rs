@@ -2,15 +2,14 @@ mod config;
 mod screens;
 
 use crate::screens::widgets::unicorn_vomit;
-use crate::screens::{widgets, Screen};
-
-use crate::screens::bridge_connect::BridgeConnect;
+use crate::screens::{Screen};
 
 use crossterm::terminal::enable_raw_mode;
 use std::time::Duration;
 use std::{io, thread};
 use tui::backend::{Backend, CrosstermBackend};
 
+use crate::screens::bridge_connect::BridgeConnect;
 use tui::Terminal;
 
 // TODO: maybe add blocking for the (what should be) asynchronous parts like hue comms

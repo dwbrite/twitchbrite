@@ -1,4 +1,5 @@
-mod static_unicorn_vomit;
+pub mod log_block;
+pub mod static_unicorn_vomit;
 pub mod unicorn_vomit;
 
 use crate::GlobalState;

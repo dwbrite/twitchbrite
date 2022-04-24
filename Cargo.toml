@@ -27,4 +27,5 @@ toml = "0.5.8"
 # used to generate a device_type id (and possibly interest light effects in the future)
 rand = "0.8.5"
 
-
+# used for temporarily moving borrowed values where deemed safe. Aborts program on panic.
+take_mut = "0.2.2"
