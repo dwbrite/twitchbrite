@@ -1,6 +1,6 @@
 use crate::config::Config;
-use crate::screens::widgets::{center_rect, draw_bg};
-use crate::screens::Screen;
+use crate::models::Screen;
+use crate::widgets::{center_rect, draw_bg};
 use crate::GlobalState;
 use crossbeam_channel::{Receiver, Sender};
 use hueclient::Bridge;
@@ -8,19 +8,19 @@ use hueclient::Bridge;
 use std::thread;
 use tui::backend::Backend;
 
-use crate::screens::bridge_connect::tasks::{
+use crate::models::bridge_connect::tasks::{
     DiscoverBridgeTask, ReadConfigTask, RegisterClientTask, Task, ValidateConfigTask,
 };
 
-use crate::screens::widgets::log_block::{Log, LogEvent};
+use crate::widgets::log_block::{Log, LogEvent};
 use tui::widgets::{Block, Borders};
 use tui::Frame;
 
 pub mod tasks {
     use crate::config::{generate_device_type, get_config_path, Config};
-    use crate::screens::bridge_connect::State;
-    use crate::screens::widgets::log_block::LogVariant::{Info, TaskComplete, TaskFailed};
-    use crate::screens::widgets::log_block::{LogEvent, LogItem};
+    use crate::models::bridge_connect::State;
+    use crate::widgets::log_block::LogVariant::{Info, TaskComplete, TaskFailed};
+    use crate::widgets::log_block::{LogEvent, LogItem};
     use crossbeam_channel::Sender;
     use hueclient::{Bridge, UnauthBridge};
     use std::fs;
