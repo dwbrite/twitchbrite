@@ -1,4 +1,5 @@
 pub mod log_block;
+pub mod rainbow_border;
 pub mod static_unicorn_vomit;
 pub mod unicorn_vomit;
 
