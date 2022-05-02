@@ -6,8 +6,8 @@ use tui::style::Style;
 use tui::widgets::Widget;
 
 pub struct RainbowBorderWidget {
-    pub(crate) edge_animated: bool,
-    pub(crate) ticks: u64,
+    pub border_animated: bool,
+    pub ticks: u64,
 }
 
 impl Widget for RainbowBorderWidget {
@@ -20,7 +20,7 @@ impl Widget for RainbowBorderWidget {
         static_vomit_fg.render(outer_rect, buf);
 
         // set background to unicorn vomit
-        if self.edge_animated {
+        if self.border_animated {
             let state = self.ticks as f32 * 0.016;
             let bg = unicorn_vomit::Background { state };
             bg.render(outer_rect, buf);

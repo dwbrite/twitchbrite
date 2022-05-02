@@ -1,5 +1,6 @@
+mod activities;
 mod config;
-mod models;
+mod tasks;
 pub mod widgets;
 
 use crate::widgets::unicorn_vomit;
@@ -9,8 +10,8 @@ use std::time::Duration;
 use std::{io, thread};
 use tui::backend::{Backend, CrosstermBackend};
 
-use crate::models::bridge_connect::BridgeConnect;
-use crate::models::Screen;
+use crate::activities::bridge_connect::BridgeConnect;
+use crate::activities::Activity;
 use tui::Terminal;
 
 // TODO: maybe add blocking for the (what should be) asynchronous parts like hue comms
@@ -23,9 +24,9 @@ pub struct GlobalState {
 
 pub struct TwitchBrite<B: Backend> {
     terminal: Terminal<B>,
-    screen: Box<dyn Screen<B>>,
+    activity: Box<dyn Activity<B>>,
     state: GlobalState,
-    history_stack: Vec<Box<dyn Screen<B>>>,
+    // history_stack: Vec<Box<dyn Activity<B>>>,
 }
 
 impl<B: Backend> TwitchBrite<B> {
@@ -37,13 +38,13 @@ impl<B: Backend> TwitchBrite<B> {
 
         let mut app = Self {
             terminal,
-            screen: Box::new(BridgeConnect::init()),
+            activity: Box::new(BridgeConnect::init()),
             state: GlobalState {
                 should_stop: false,
                 ticks: 0,
                 edge_animated: true,
             },
-            history_stack: vec![],
+            // history_stack: vec![],
         };
 
         loop {
@@ -64,14 +65,14 @@ impl<B: Backend> TwitchBrite<B> {
         self.state.ticks += 1;
 
         // new screens can use event::poll() and event::read() for input
-        self.screen.update(&mut self.state);
+        self.activity.update(&mut self.state);
 
         Ok(())
     }
 
     fn draw(&mut self) -> anyhow::Result<()> {
         self.terminal.draw(|f| {
-            self.screen.draw(&mut self.state, f);
+            self.activity.render(f);
         })?;
 
         Ok(())

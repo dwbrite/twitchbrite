@@ -75,15 +75,17 @@ pub struct Margin {
     right: u16,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LogHistory {
     content: VecDeque<LogItem>,
     ticks: u64,
 }
 
+#[derive(Debug, Clone)]
 pub struct Log {
-    pub history: LogHistory,
-    widget: LogWidget,
+    title: String,
+    margin: Margin,
+    history: LogHistory,
     rx: Receiver<LogEvent>,
     tx: Sender<LogEvent>,
 }
@@ -92,24 +94,31 @@ impl Log {
     pub fn default() -> Self {
         let (tx, rx) = crossbeam_channel::unbounded();
         Log {
+            title: "".to_string(),
+            margin: Margin {
+                top: 1,
+                bottom: 1,
+                left: 2,
+                right: 2,
+            },
             history: LogHistory {
                 content: Default::default(),
                 ticks: 0,
             },
-            widget: LogWidget::default(),
             rx,
             tx,
         }
     }
 
-    pub fn new(_title: String, _margin: Margin) -> Self {
+    pub fn new(title: String, margin: Margin) -> Self {
         let (tx, rx) = crossbeam_channel::unbounded();
         Log {
+            title,
+            margin,
             history: LogHistory {
                 content: Default::default(),
                 ticks: 0,
             },
-            widget: LogWidget::default(),
             rx,
             tx,
         }
@@ -141,46 +150,12 @@ impl Log {
         }
     }
 
-    pub fn widget(&self) -> LogWidget {
-        self.widget.clone()
-    }
-
     pub fn set_title(&mut self, title: String) {
-        self.widget.title = title;
+        self.title = title;
     }
 
     pub fn set_margin(&mut self, margin: Margin) {
-        self.widget.margin = margin;
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct LogWidget {
-    title: String,
-    margin: Margin,
-}
-
-impl LogWidget {
-    fn default() -> Self {
-        Self {
-            title: "".to_string(),
-            margin: Margin {
-                top: 1,
-                bottom: 1,
-                left: 2,
-                right: 2,
-            },
-        }
-    }
-
-    fn title(mut self, title: String) -> Self {
-        self.title = title;
-        self
-    }
-
-    fn margin(mut self, margin: Margin) -> Self {
         self.margin = margin;
-        self
     }
 
     fn calculate_inner(&self, area: Rect) -> Rect {
@@ -191,6 +166,13 @@ impl LogWidget {
             height: area.height - (self.margin.top + self.margin.bottom),
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct LogWidget {
+    title: String,
+    margin: Margin,
+    history: LogHistory,
 }
 
 impl From<&mut LogHistory> for Vec<ListItem<'_>> {
@@ -254,17 +236,15 @@ impl From<&mut LogHistory> for Vec<ListItem<'_>> {
     }
 }
 
-impl StatefulWidget for LogWidget {
-    type State = LogHistory;
-
-    fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
+impl Widget for Log {
+    fn render(mut self, area: Rect, buf: &mut Buffer) {
         let outer_block = Block::default()
             .borders(Borders::ALL)
             .title(self.title.clone());
         outer_block.render(area, buf);
 
         // TODO: break up (newline + tab?) log items based on width vs inner_area
-        let log_list = List::new(state).start_corner(Corner::BottomLeft);
+        let log_list = List::new(&mut self.history).start_corner(Corner::BottomLeft);
         Widget::render(log_list, self.calculate_inner(area), buf);
     }
 }
