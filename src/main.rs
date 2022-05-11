@@ -65,14 +65,14 @@ impl<B: Backend> TwitchBrite<B> {
         self.state.ticks += 1;
 
         // new screens can use event::poll() and event::read() for input
-        self.activity.update(&mut self.state);
+        self.activity.update(self.state.ticks);
 
         Ok(())
     }
 
     fn draw(&mut self) -> anyhow::Result<()> {
         self.terminal.draw(|f| {
-            self.activity.render(f);
+            self.activity.render(self.state.ticks, f);
         })?;
 
         Ok(())

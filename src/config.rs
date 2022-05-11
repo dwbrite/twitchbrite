@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
@@ -11,14 +11,18 @@ use std::ops::{Deref, DerefMut};
 use std::{env, fs};
 
 pub struct ValidatedBridge {
+    device_type: String, // honestly this is entirely unnecessary
     bridge: Bridge,
 }
 
 impl ValidatedBridge {
-    pub fn from_bridge(bridge: Bridge) -> Result<Self> {
+    pub fn from_bridge(bridge: Bridge, device_type: String) -> Result<Self> {
         bridge.get_all_lights()?;
 
-        Ok(Self { bridge })
+        Ok(Self {
+            bridge,
+            device_type,
+        })
     }
 }
 
@@ -51,9 +55,9 @@ impl BridgeConfig {
     }
 
     /// create a bridge config from an _authorized_ Bridge
-    pub fn from_bridge(device_type: String, bridge: &ValidatedBridge) -> Self {
+    pub fn from_validated_bridge(bridge: &ValidatedBridge) -> Self {
         BridgeConfig {
-            device_type,
+            device_type: bridge.device_type.clone(),
             bridge_ip: bridge.ip,
             bridge_username: bridge.username.clone(),
         }
