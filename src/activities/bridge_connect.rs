@@ -7,11 +7,13 @@ use hueclient::{Bridge, UnauthBridge};
 use tui::backend::Backend;
 use tui::buffer::Buffer;
 
-use crate::activities::bridge_connect::State::Waiting;
+use crate::activities::bridge_connect::State::{Complete, Waiting};
 use crate::tasks::Task;
 use crate::widgets::log_block::LogVariant::{TaskComplete, TaskFailed};
 use crate::widgets::log_block::{Log, LogEvent, LogItem};
 use crate::widgets::rainbow_border::RainbowBorderWidget;
+use crate::AppMsg;
+use crate::AppMsg::Next;
 use tui::layout::Rect;
 use tui::widgets::{Block, Borders, Widget};
 use tui::Frame;
@@ -150,6 +152,7 @@ pub struct BridgeConnect {
     state: Option<State>,
     log: Log,
     state_ch: (Sender<State>, Receiver<State>),
+    app_tx: Sender<AppMsg>,
 }
 
 pub struct BridgeConnectWidget {
@@ -202,12 +205,16 @@ impl<B: Backend> Activity<B> for BridgeConnect {
             self.state = Some(state.update(state_tx));
         }
 
+        if let Some(Complete(bridge)) = &self.state {
+            self.app_tx.send(Next);
+        }
+
         self.log.update();
     }
 }
 
 impl BridgeConnect {
-    pub fn init() -> Self {
+    pub fn init(app_tx: Sender<AppMsg>) -> Self {
         let mut log = Log::default();
         log.set_title(String::from(" welcome to twitchbrite "));
 
@@ -223,6 +230,7 @@ impl BridgeConnect {
             state: None,
             log,
             state_ch,
+            app_tx,
         }
     }
 }

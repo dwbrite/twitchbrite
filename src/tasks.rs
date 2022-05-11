@@ -1,6 +1,7 @@
 use std::thread;
 
 /// A task is a long-running activity meant to run on another thread.
+/// basically it's async for when you don't want to build an executor in your "game" loop.
 pub trait Task {
     type Result;
     type OnCompleteParams;
