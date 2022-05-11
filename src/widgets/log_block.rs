@@ -6,7 +6,7 @@ use tui::buffer::Buffer;
 use tui::layout::{Corner, Rect};
 use tui::style::{Color, Modifier, Style};
 use tui::text::{Span, Spans};
-use tui::widgets::{Block, Borders, List, ListItem, StatefulWidget, Widget};
+use tui::widgets::{Block, Borders, List, ListItem, Widget};
 
 #[derive(Debug, Copy, Clone)]
 pub enum LogVariant {

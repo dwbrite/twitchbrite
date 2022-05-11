@@ -9,6 +9,8 @@ edition = "2021"
 # terminal ui
 tui = "0.17"
 crossterm = "0.22"
+unicode-segmentation = "1.9.0"
+itertools = "0.10.3"
 
 ## multithreading
 # used for communicating across threads

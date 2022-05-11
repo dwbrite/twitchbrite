@@ -1,13 +1,10 @@
-use crate::Msg;
 use itertools::Itertools;
-use tuirealm::command::{Cmd, CmdResult};
-use tuirealm::tui::buffer::Buffer;
-use tuirealm::tui::layout::Rect;
-use tuirealm::tui::text::{Span, Spans};
-use tuirealm::tui::widgets::Widget;
-use tuirealm::{
-    AttrValue, Attribute, Component, Event, Frame, MockComponent, NoUserEvent, Props, State,
-};
+
+use tui::buffer::Buffer;
+use tui::layout::Rect;
+use tui::text::{Span, Spans};
+use tui::widgets::Widget;
+
 use unicode_segmentation::UnicodeSegmentation;
 
 fn split_span_at(span: Span, idx: usize) -> (Span, Span) {
@@ -30,6 +27,7 @@ fn split_span_every(span: Span, n: usize) -> Vec<Span> {
 }
 
 /// Smartline represents a single *wrapped* line of text
+#[derive(Debug, Clone)]
 struct WrappingText<'a> {
     lines: Vec<Line<'a>>, // one line that may be split into multiple lines
 }
@@ -85,8 +83,8 @@ impl<'a> Widget for Line<'a> {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct SmartTextComponent<'a> {
-    props: Props,
     reversed: bool,
     input_text: Vec<Spans<'a>>,
 }
@@ -94,7 +92,6 @@ pub struct SmartTextComponent<'a> {
 impl<'a> SmartTextComponent<'a> {
     pub fn new() -> Self {
         Self {
-            props: Default::default(),
             reversed: false,
             input_text: vec![],
         }
@@ -122,23 +119,23 @@ impl<'a> SmartTextComponent<'a> {
     }
 }
 
-impl<'a> MockComponent for SmartTextComponent<'a> {
-    fn view(&mut self, f: &mut Frame, area: Rect) {
+impl<'a> Widget for SmartTextComponent<'a> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
         let mut lines_used = 0;
         for wrapping_text in self.output_text(area) {
             if self.reversed {
                 lines_used += wrapping_text.lines.len();
                 for (idx, line) in wrapping_text.lines.iter().enumerate() {
-                    f.render_widget(
-                        line.clone(),
+                    line.clone().render(
                         Rect::new(area.x, area.y - (lines_used + idx) as u16, area.width, 1),
-                    );
+                        buf,
+                    )
                 }
             } else {
                 for line in wrapping_text.lines {
-                    f.render_widget(
-                        line,
+                    line.render(
                         Rect::new(area.x, area.y + lines_used as u16, area.width, 1),
+                        buf,
                     );
                     lines_used += 1;
 
@@ -148,28 +145,5 @@ impl<'a> MockComponent for SmartTextComponent<'a> {
                 }
             }
         }
-    }
-
-    fn query(&self, attr: Attribute) -> Option<AttrValue> {
-        self.props.get(attr)
-    }
-
-    fn attr(&mut self, attr: Attribute, value: AttrValue) {
-        self.props.set(attr, value);
-    }
-    fn state(&self) -> State {
-        State::None
-    }
-
-    fn perform(&mut self, cmd: Cmd) -> CmdResult {
-        match cmd {
-            _ => CmdResult::None,
-        }
-    }
-}
-
-impl<'a> Component<Msg, NoUserEvent> for SmartTextComponent<'a> {
-    fn on(&mut self, ev: Event<NoUserEvent>) -> Option<Msg> {
-        None
     }
 }
